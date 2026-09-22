@@ -29,6 +29,9 @@ public class ChatEntry {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column(name = "chat_id", nullable = false)
+    private Long chatId;
+
 
     public static ChatEntry toChatEntry(Message message) {
         return ChatEntry.builder()

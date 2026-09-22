@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -77,8 +78,16 @@ class ChatDialogControllerSyncIntegrationTest extends AbstractIntegrationTest {
                 .isEmpty();
     }
 
+    @Test
+    void syncEntryForMissingChatReturns404WithoutCallingModel() throws Exception {
+        mockMvc.perform(post("/chat/{id}/entry", Long.MAX_VALUE).param("prompt", "Привет"))
+                .andExpect(status().isNotFound());
+
+        verify(chatModel, never()).call(any(Prompt.class));
+    }
+
     private List<ChatEntry> historyOf(Long chatId) {
-        return chatRepository.findById(chatId).orElseThrow()
+        return chatRepository.findWithHistoryById(chatId).orElseThrow()
                 .getHistory()
                 .stream()
                 .sorted(Comparator.comparing(ChatEntry::getId))

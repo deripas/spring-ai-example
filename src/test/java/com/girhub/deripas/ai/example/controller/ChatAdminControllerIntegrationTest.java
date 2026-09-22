@@ -74,7 +74,7 @@ class ChatAdminControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void showChatRendersHistory() throws Exception {
-        final Chat chat = Chat.builder().title("С историей").build();
+        final Chat chat = chatRepository.save(Chat.builder().title("С историей").build());
         chat.addChatEntry(ChatEntry.builder().role(Role.USER).content("Привет").build());
         chat.addChatEntry(ChatEntry.builder().role(Role.ASSISTANT).content("Здравствуй").build());
         final Long chatId = chatRepository.save(chat).getId();
@@ -88,8 +88,14 @@ class ChatAdminControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void showMissingChatReturns404() throws Exception {
+        mockMvc.perform(get("/chat/{id}", Long.MAX_VALUE))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void deleteChatRemovesChatWithHistory() throws Exception {
-        final Chat chat = Chat.builder().title("Удаляемый").build();
+        final Chat chat = chatRepository.save(Chat.builder().title("Удаляемый").build());
         chat.addChatEntry(ChatEntry.builder().role(Role.USER).content("Вопрос").build());
         final Long chatId = chatRepository.save(chat).getId();
 
