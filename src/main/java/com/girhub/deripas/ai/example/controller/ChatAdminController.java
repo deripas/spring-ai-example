@@ -3,14 +3,13 @@ package com.girhub.deripas.ai.example.controller;
 import com.girhub.deripas.ai.example.model.Chat;
 import com.girhub.deripas.ai.example.services.ChatService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
-public class ChatController {
+public class ChatAdminController {
 
     private final ChatService chatService;
 
@@ -25,7 +24,6 @@ public class ChatController {
         model.addAttribute("chats", chatService.getAllChats());
         model.addAttribute("chat", chatService.getChat(chatId));
         return "chat";
-
     }
 
     @PostMapping("/chat/new")
@@ -39,11 +37,4 @@ public class ChatController {
         chatService.deleteChat(chatId);
         return "redirect:/";
     }
-
-    @PostMapping("/chat/{chatId}/entry")
-    public String talkToModel(@PathVariable Long chatId, @RequestParam String prompt) {
-        chatService.proceedInteraction(chatId, prompt);
-        return "redirect:/chat/" + chatId;
-    }
-
 }

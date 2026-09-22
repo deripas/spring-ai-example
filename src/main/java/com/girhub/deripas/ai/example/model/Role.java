@@ -9,8 +9,8 @@ import org.springframework.ai.chat.messages.UserMessage;
 
 import java.util.Arrays;
 
-@RequiredArgsConstructor
 @Getter
+@RequiredArgsConstructor
 public enum Role {
 
     USER("user") {

@@ -27,16 +27,14 @@ public class Chat {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "chat_id")
+    @Builder.Default
     private List<ChatEntry> history = new ArrayList<>();
 
     public void addChatEntry(ChatEntry entry) {
         history.add(entry);
     }
-
-
 
 
 }
