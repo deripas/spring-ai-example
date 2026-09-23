@@ -1,42 +1,38 @@
 package com.girhub.deripas.ai.example.services;
 
-import com.girhub.deripas.ai.example.model.Chat;
 import com.girhub.deripas.ai.example.model.ChatEntry;
-import com.girhub.deripas.ai.example.repo.ChatRepository;
+import com.girhub.deripas.ai.example.repo.ChatEntryRepository;
 import lombok.Builder;
 import org.jspecify.annotations.NonNull;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.data.domain.Limit;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Builder
 public class PostgresChatMemory implements ChatMemory {
 
-    private ChatRepository chatMemoryRepository;
-
-    private int maxMessages;
+    private final ChatEntryRepository chatEntryRepository;
+    private final int maxMessages;
 
     @Override
     public void add(@NonNull String conversationId, List<Message> messages) {
-        final Chat chat = getChat(conversationId);
-        for (Message message : messages) {
-            chat.addChatEntry(ChatEntry.toChatEntry(message));
-        }
-        chatMemoryRepository.save(chat);
+        final Long chatId = chatId(conversationId);
+        final List<ChatEntry> entries = messages.stream()
+                .map(message -> ChatEntry.toChatEntry(chatId, message))
+                .toList();
+        chatEntryRepository.saveAll(entries);
     }
 
     @NonNull
     @Override
     public List<Message> get(@NonNull String conversationId) {
-        final Chat chat = getChat(conversationId);
-        return chat.getHistory().stream()
-                .sorted(Comparator.comparing(ChatEntry::getCreatedAt))
+        return chatEntryRepository.findByChatIdOrderByCreatedAtDescIdDesc(chatId(conversationId), Limit.of(maxMessages))
+                .reversed()
+                .stream()
                 .map(ChatEntry::toMessage)
-                .limit(maxMessages)
                 .toList();
-
     }
 
     @Override
@@ -44,7 +40,7 @@ public class PostgresChatMemory implements ChatMemory {
         //not implemented
     }
 
-    private @NonNull Chat getChat(@NonNull String conversationId) {
-        return chatMemoryRepository.findById(Long.valueOf(conversationId)).orElseThrow();
+    private static @NonNull Long chatId(@NonNull String conversationId) {
+        return Long.valueOf(conversationId);
     }
 }

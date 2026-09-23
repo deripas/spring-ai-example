@@ -10,4 +10,5 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     @EntityGraph(attributePaths = "history")
     Optional<Chat> findWithHistoryById(Long id);
+
 }

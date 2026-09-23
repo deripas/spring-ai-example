@@ -1,7 +1,18 @@
+// Markdown -> HTML с очисткой от опасной разметки (ответ LLM может содержать <script>, onerror= и т.п.)
+function renderMarkdown(markdown) {
+    return DOMPurify.sanitize(marked.parse(markdown));
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     const sendButton = document.getElementById("send-button");
     const chatInput = document.getElementById("chat-input");
     const messagesContainer = document.getElementById("messages");
+
+    // История из БД приходит как текст (th:text) - рендерим так же, как при стриме
+    messagesContainer.querySelectorAll(".message.mentor .bubble").forEach(bubble => {
+        bubble.innerHTML = renderMarkdown(bubble.textContent);
+    });
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
     sendButton.addEventListener("click", function() {
         const prompt = chatInput.value;
@@ -11,7 +22,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // Добавляем сообщение пользователя в чат
         const userDiv = document.createElement("div");
         userDiv.className = "message user";
-        userDiv.innerHTML = `<img src="/images/user.png" alt="User"><div class="bubble">${prompt}</div>`;
+        userDiv.innerHTML = `<img src="/images/user.png" alt="User"><div class="bubble"></div>`;
+        userDiv.querySelector(".bubble").textContent = prompt;
         messagesContainer.appendChild(userDiv);
 
         const pathParts = window.location.pathname.split("/");
@@ -37,8 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
             let token = data.text;
             console.log(token);
             fullText += token;
-            // Преобразуем Markdown в HTML (при условии, что marked.js подключен)
-            aiBubble.innerHTML = marked.parse(fullText);
+            aiBubble.innerHTML = renderMarkdown(fullText);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         };
 

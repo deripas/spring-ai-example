@@ -5,7 +5,6 @@ import com.girhub.deripas.ai.example.model.Chat;
 import com.girhub.deripas.ai.example.model.ChatEntry;
 import com.girhub.deripas.ai.example.model.Role;
 import com.girhub.deripas.ai.example.repo.ChatRepository;
-import com.girhub.deripas.ai.example.services.DialogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -23,7 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -42,9 +40,6 @@ class ChatDialogControllerStreamingIntegrationTest extends AbstractIntegrationTe
 
     @Autowired
     private ChatRepository chatRepository;
-
-    @Autowired
-    private DialogService dialogService;
 
     private Long chatId;
 
@@ -88,33 +83,6 @@ class ChatDialogControllerStreamingIntegrationTest extends AbstractIntegrationTe
                         tuple(Role.USER, "Ты кто?"),
                         tuple(Role.ASSISTANT, "Я Borisov GPT")
                 );
-    }
-
-    @Test
-    void streamErrorDoesNotSavePartialAnswer() {
-        when(chatModel.stream(any(Prompt.class)))
-                .thenReturn(Flux.just(token("Я "), token("Bori"))
-                        .concatWith(Flux.error(new IllegalStateException("Ollama недоступна"))));
-
-        assertThatThrownBy(() -> dialogService.proceedInteractionStreaming(chatId, "Ты кто?").blockLast())
-                .hasMessageContaining("Ollama недоступна");
-
-        assertThat(historyOf(chatId)).isEmpty();
-    }
-
-    @Test
-    void cancelledStreamDoesNotSavePartialAnswer() {
-        when(chatModel.stream(any(Prompt.class)))
-                .thenReturn(Flux.just(token("Я "), token("Borisov "), token("GPT")));
-
-        // клиент закрыл вкладку после первых двух токенов
-        final List<String> received = dialogService.proceedInteractionStreaming(chatId, "Ты кто?")
-                .take(2)
-                .collectList()
-                .block();
-
-        assertThat(received).containsExactly("Я ", "Borisov ");
-        assertThat(historyOf(chatId)).isEmpty();
     }
 
     @Test

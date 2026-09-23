@@ -2,10 +2,7 @@ package com.girhub.deripas.ai.example.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.messages.*;
 
 import java.util.Arrays;
 
@@ -13,33 +10,37 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum Role {
 
-    USER("user") {
+    USER(MessageType.USER) {
         @Override
         Message getMessage(String message) {
             return new UserMessage(message);
         }
     },
-    ASSISTANT("assistant") {
+    ASSISTANT(MessageType.ASSISTANT) {
         @Override
         Message getMessage(String message) {
             return new AssistantMessage(message);
         }
     },
-    SYSTEM("system") {
+    SYSTEM(MessageType.SYSTEM) {
         @Override
         Message getMessage(String prompt) {
             return new SystemMessage(prompt);
         }
     };
 
-    private final String role;
+    private final MessageType messageType;
 
-    public static Role getRole(String roleName) {
+    public static Role getRole(MessageType messageType) {
         return Arrays.stream(Role.values())
-                .filter(role -> role.role.equals(roleName))
+                .filter(role -> role.messageType.equals(messageType))
                 .findFirst()
                 .orElseThrow();
     }
 
     abstract Message getMessage(String prompt);
+
+    public String getRole() {
+        return messageType.getValue();
+    }
 }

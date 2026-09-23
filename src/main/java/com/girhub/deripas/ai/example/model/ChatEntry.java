@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatEntry {
@@ -33,13 +33,13 @@ public class ChatEntry {
     private Long chatId;
 
 
-    public static ChatEntry toChatEntry(Message message) {
+    public static ChatEntry toChatEntry(Long chatId, Message message) {
         return ChatEntry.builder()
-                .role(Role.getRole(message.getMessageType().getValue()))
+                .chatId(chatId)
+                .role(Role.getRole(message.getMessageType()))
                 .content(message.getText())
                 .build();
     }
-
 
     public Message toMessage() {
         return role.getMessage(content);

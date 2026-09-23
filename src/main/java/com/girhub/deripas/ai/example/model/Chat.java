@@ -30,7 +30,6 @@ public class Chat {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    // только чтение: chat_id пишет ChatEntry.chatId
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "chat_id", insertable = false, updatable = false)
     @OrderBy("createdAt, id")
@@ -43,6 +42,4 @@ public class Chat {
         entry.setChatId(Objects.requireNonNull(id, "Chat must be saved before adding entries"));
         history.add(entry);
     }
-
-
 }

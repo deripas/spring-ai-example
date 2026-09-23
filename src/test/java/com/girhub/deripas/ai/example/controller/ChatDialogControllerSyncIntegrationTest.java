@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -23,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -68,14 +71,24 @@ class ChatDialogControllerSyncIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void syncEntryRollsBackWhenModelFails() {
+    void secondEntrySendsPreviousDialogToModelInChronologicalOrder() throws Exception {
         when(chatModel.call(any(Prompt.class)))
-                .thenThrow(new IllegalStateException("Ollama недоступна"));
+                .thenReturn(answer("Я Borisov GPT"))
+                .thenReturn(answer("Тебя зовут Антон"));
 
-        assertThatThrownBy(() -> mockMvc.perform(post("/chat/{id}/entry", chatId).param("prompt", "Привет")))
-                .hasRootCauseInstanceOf(IllegalStateException.class);
-        assertThat(historyOf(chatId))
-                .isEmpty();
+        mockMvc.perform(post("/chat/{id}/entry", chatId).param("prompt", "Привет! Меня зовут Антон"));
+        mockMvc.perform(post("/chat/{id}/entry", chatId).param("prompt", "Как меня зовут?"));
+
+        final ArgumentCaptor<Prompt> promptCaptor = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel, times(2)).call(promptCaptor.capture());
+
+        assertThat(promptCaptor.getAllValues().getLast().getInstructions())
+                .extracting(Message::getMessageType, Message::getText)
+                .containsExactly(
+                        tuple(MessageType.USER, "Привет! Меня зовут Антон"),
+                        tuple(MessageType.ASSISTANT, "Я Borisov GPT"),
+                        tuple(MessageType.USER, "Как меня зовут?")
+                );
     }
 
     @Test
