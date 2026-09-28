@@ -28,7 +28,8 @@ public class ChatService {
     }
 
     public Chat getChat(Long chatId) {
-        return chatRepo.findWithHistoryById(chatId).orElseThrow(() -> new ChatNotFoundException(chatId));
+        return chatRepo.findWithHistoryById(chatId)
+                .orElseThrow(() -> new ChatNotFoundException(chatId));
     }
 
     public void requireChat(Long chatId) {

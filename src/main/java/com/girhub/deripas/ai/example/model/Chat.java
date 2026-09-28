@@ -32,7 +32,7 @@ public class Chat {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "chat_id", insertable = false, updatable = false)
-    @OrderBy("createdAt, id")
+    @OrderBy("createdAt ASC , id ASC ")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @Builder.Default

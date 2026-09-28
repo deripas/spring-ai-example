@@ -99,9 +99,9 @@ class ChatDialogControllerStreamingIntegrationTest extends AbstractIntegrationTe
     }
 
     private List<ChatEntry> historyOf(Long chatId) {
-        return chatRepository.findWithHistoryById(chatId).orElseThrow().getHistory().stream()
-                .sorted(Comparator.comparing(ChatEntry::getId))
-                .toList();
+        return chatRepository.findWithHistoryById(chatId)
+                .orElseThrow()
+                .getHistory();
     }
 
     private static ChatResponse token(String text) {
