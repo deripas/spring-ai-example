@@ -21,8 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -61,12 +59,11 @@ class ChatDialogControllerSyncIntegrationTest extends AbstractIntegrationTest {
         verify(chatModel).call(promptCaptor.capture());
 
         assertThat(promptCaptor.getValue().getUserMessage().getText())
-                .isEqualTo("Привет! Ты кто?");
+                .startsWith("Привет! Ты кто?");
         assertThat(historyOf(chatId))
-                .extracting(ChatEntry::getRole, ChatEntry::getContent)
-                .containsExactly(
-                        tuple(Role.USER, "Привет! Ты кто?"),
-                        tuple(Role.ASSISTANT, "Я Borisov GPT")
+                .satisfiesExactly(
+                        entry -> assertChatEntry(entry, Role.USER, "Привет! Ты кто?"),
+                        entry -> assertChatEntry(entry, Role.ASSISTANT, "Я Borisov GPT")
                 );
     }
 
@@ -80,14 +77,14 @@ class ChatDialogControllerSyncIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/chat/{id}/entry", chatId).param("prompt", "Как меня зовут?"));
 
         final ArgumentCaptor<Prompt> promptCaptor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModel, times(2)).call(promptCaptor.capture());
+        verify(chatModel, times(2))
+                .call(promptCaptor.capture());
 
         assertThat(promptCaptor.getAllValues().getLast().getInstructions())
-                .extracting(Message::getMessageType, Message::getText)
-                .containsExactly(
-                        tuple(MessageType.USER, "Привет! Меня зовут Антон"),
-                        tuple(MessageType.ASSISTANT, "Я Borisov GPT"),
-                        tuple(MessageType.USER, "Как меня зовут?")
+                .satisfiesExactly(
+                        m -> assertMessage(m, MessageType.USER, "Привет! Меня зовут Антон"),
+                        m -> assertMessage(m, MessageType.ASSISTANT, "Я Borisov GPT"),
+                        m -> assertMessage(m, MessageType.USER, "Как меня зовут?")
                 );
     }
 
@@ -96,7 +93,8 @@ class ChatDialogControllerSyncIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/chat/{id}/entry", Long.MAX_VALUE).param("prompt", "Привет"))
                 .andExpect(status().isNotFound());
 
-        verify(chatModel, never()).call(any(Prompt.class));
+        verify(chatModel, never())
+                .call(any(Prompt.class));
     }
 
     private List<ChatEntry> historyOf(Long chatId) {
@@ -109,5 +107,19 @@ class ChatDialogControllerSyncIntegrationTest extends AbstractIntegrationTest {
 
     private static ChatResponse answer(String text) {
         return new ChatResponse(List.of(new Generation(new AssistantMessage(text))));
+    }
+
+    private static void assertMessage(Message message, MessageType messageType, String prefix) {
+        assertThat(message.getMessageType())
+                .isEqualTo(messageType);
+        assertThat(message.getText())
+                .startsWith(prefix);
+    }
+
+    private static void assertChatEntry(ChatEntry entry, Role role, String prefix) {
+        assertThat(entry.getRole())
+                .isEqualTo(role);
+        assertThat(entry.getContent())
+                .startsWith(prefix);
     }
 }

@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import(TestPostgresConfiguration.class)
 public abstract class AbstractIntegrationTest {
 
     @MockitoBean

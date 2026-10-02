@@ -55,7 +55,7 @@ public class ExampleApplication {
 
 	@Bean
 	@Order(3)
-	public SimpleLoggerAdvisor simpleLoggerAdvisor(VectorStore vectorStore) {
+	public SimpleLoggerAdvisor simpleLoggerAdvisor() {
 		return SimpleLoggerAdvisor.builder()
 				.build();
 	}

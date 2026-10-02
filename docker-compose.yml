@@ -22,16 +22,17 @@ services:
       interval: 2s
       timeout: 20s
       retries: 10
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-    volumes:
-      - ./postgres/data/servers.json:/pgadmin4/servers.json
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
+
+#  pgadmin:
+#    container_name: pgadmin
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+#    volumes:
+#      - ./postgres/data/servers.json:/pgadmin4/servers.json
+#    ports:
+#      - "${PGADMIN_PORT:-5050}:80"
 
 #  ollama:
 #    image: ollama/ollama
