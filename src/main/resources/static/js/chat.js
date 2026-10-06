@@ -58,4 +58,13 @@ document.addEventListener("DOMContentLoaded", function() {
             eventSource.close();
         };
     });
+
+    // Enter - отправить, Shift+Enter - перенос строки
+    chatInput.addEventListener("keydown", function(event) {
+        // isComposing: не отправлять, пока IME набирает символ
+        if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            sendButton.click();
+        }
+    });
 });
