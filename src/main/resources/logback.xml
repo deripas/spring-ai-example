@@ -5,7 +5,7 @@
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
     </root>
-    <logger name="org.springframework.web" level="DEBUG"/>
+    <logger name="org.springframework.web" level="INFO"/>
 
     <!-- JPA: SQL, значения параметров и границы транзакций -->
     <logger name="org.hibernate.SQL" level="DEBUG"/>
